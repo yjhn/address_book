@@ -44,6 +44,8 @@ struct Address *find_address_by_email(const struct AddressBook *addresses,
 				      const char *email);
 struct Address *find_address_by_phone(const struct AddressBook *addresses,
 				      const char *phone);
+static struct ListElement *make_elem(const struct Address addr,
+				     struct ListElement *next);
 
 int main(void)
 {
@@ -69,6 +71,16 @@ int main(void)
 	fclose(file);
 
 	return 0;
+}
+
+// next can be null
+static struct ListElement *make_elem(const struct Address addr,
+				     struct ListElement *next)
+{
+	struct ListElement *elem = malloc(sizeof(*elem));
+	elem->data = addr;
+	elem->next = next;
+	return elem;
 }
 
 // Constructs an address book from addresses in the given file.
@@ -99,10 +111,8 @@ struct AddressBook read_addresses(FILE *file)
 		}
 
 		struct Address addr = parse_line(line);
-		struct ListElement *elem = malloc(sizeof(*elem));
-		elem->data = addr;
-		elem->next = NULL;
-		last->next = elem;
+		last->next = make_elem(addr, NULL);
+		last = last->next;
 		addresses.size += 1;
 	}
 
@@ -134,6 +144,7 @@ struct Address parse_line(char *line)
 // Displays all addresses in a table.
 void display_addresses(const struct AddressBook *addresses)
 {
+	printf("%ld records in total.\n", addresses->size);
 	struct ListElement *elem = addresses->head;
 	printf("%-15s\t%-15s\t%-30s\t%-12s\n", "NAME", "SURNAME", "EMAIL",
 	       "PHONE");
@@ -146,7 +157,21 @@ void display_addresses(const struct AddressBook *addresses)
 }
 
 void add_address_to_end(struct AddressBook *addresses,
-			const struct Address addr);
+			const struct Address addr)
+{
+	struct ListElement *new = make_elem(addr, NULL);
+	addresses->size += 1;
+	struct ListElement *elem = addresses->head;
+	if (elem == NULL) {
+		addresses->head = new;
+		return;
+	}
+	while (elem->next != NULL) {
+		elem = elem->next;
+	}
+	elem->next = new;
+}
+
 _Bool add_address(struct AddressBook *addresses, const size_t pos,
 		  const struct Address addr);
 _Bool delete_address(struct AddressBook *addresses, const size_t pos);
