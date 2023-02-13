@@ -27,9 +27,23 @@ struct AddressBook {
 
 struct AddressBook read_addresses(FILE *file);
 struct Address parse_line(char *line);
-void display_addresses(const struct *AddressBook);
-void add_address_to_end(struct *AddressBook);
-void add_address(struct *AddressBook, size_t pos);
+void display_addresses(const struct AddressBook *addresses);
+void add_address_to_end(struct AddressBook *addresses,
+			const struct Address addr);
+_Bool add_address(struct AddressBook *addresses, const size_t pos,
+		  const struct Address addr);
+_Bool delete_address(struct AddressBook *addresses, const size_t pos);
+struct Address *get_address(const struct AddressBook *addresses,
+			    const size_t pos);
+void delete_all_addresses(struct AddressBook *addresses);
+struct Address *find_address_by_name(const struct AddressBook *addresses,
+				     const char *name);
+struct Address *find_address_by_surname(const struct AddressBook *addresses,
+					const char *surname);
+struct Address *find_address_by_email(const struct AddressBook *addresses,
+				      const char *email);
+struct Address *find_address_by_phone(const struct AddressBook *addresses,
+				      const char *phone);
 
 int main(void)
 {
@@ -37,9 +51,7 @@ int main(void)
 	char file_path[PATH_BUFFER_SIZE];
 	snprintf(file_path, PATH_BUFFER_SIZE, "%s/%s", home_dir, FILE_NAME);
 
-	struct AddressBook addr_book {
-		.head = NULL, .size = 0
-	};
+	struct AddressBook addr_book = { .head = NULL, .size = 0 };
 
 	FILE *file = fopen(file_path, "r");
 	if (file == NULL) {
@@ -62,13 +74,11 @@ int main(void)
 // Constructs an address book from addresses in the given file.
 struct AddressBook read_addresses(FILE *file)
 {
-	struct AddressBook addresses {
-		.head = NULL, .size = 0
-	};
+	struct AddressBook addresses = { .head = NULL, .size = 0 };
 
 	char line[LINE_BUFFER_SIZE];
 	if (fgets(line, LINE_BUFFER_SIZE, file) == NULL) {
-		return NULL;
+		return addresses;
 	}
 	size_t len = strlen(line);
 	if (line[len - 1] == '\n') {
@@ -121,14 +131,33 @@ struct Address parse_line(char *line)
 	return addr;
 }
 
-// Displays all records in CSV format.
-void print_addresses(const struct ListElement *head)
+// Displays all addresses in a table.
+void display_addresses(const struct AddressBook *addresses)
 {
-	printf("%15s\t%15s\t%30s\t%12s\n", "NAME", "SURNAME", "EMAIL", "PHONE");
-	while (head != NULL) {
-		struct Address record = head->data;
-		printf("%s,%s,%s,%s\n", record.name, record.surname,
-		       record.email, record.phone);
-		head = head->next;
+	struct ListElement *elem = addresses->head;
+	printf("%-15s\t%-15s\t%-30s\t%-12s\n", "NAME", "SURNAME", "EMAIL",
+	       "PHONE");
+	while (elem != NULL) {
+		struct Address record = elem->data;
+		printf("%-15s\t%-15s\t%-30s\t%-12s\n", record.name,
+		       record.surname, record.email, record.phone);
+		elem = elem->next;
 	}
 }
+
+void add_address_to_end(struct AddressBook *addresses,
+			const struct Address addr);
+_Bool add_address(struct AddressBook *addresses, const size_t pos,
+		  const struct Address addr);
+_Bool delete_address(struct AddressBook *addresses, const size_t pos);
+struct Address *get_address(const struct AddressBook *addresses,
+			    const size_t pos);
+void delete_all_addresses(struct AddressBook *addresses);
+struct Address *find_address_by_name(const struct AddressBook *addresses,
+				     const char *name);
+struct Address *find_address_by_surname(const struct AddressBook *addresses,
+					const char *surname);
+struct Address *find_address_by_email(const struct AddressBook *addresses,
+				      const char *email);
+struct Address *find_address_by_phone(const struct AddressBook *addresses,
+				      const char *phone);
