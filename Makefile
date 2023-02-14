@@ -5,7 +5,7 @@ run: build
 
 build:
 	mkdir -p build
-	gcc -o build/addr *.c -std=gnu11 -Wall -Wextra -Wpedantic -Wconversion
+	gcc -o build/addr main.c -std=gnu11 -Wall -Wextra -Wpedantic -Wconversion
 
 valgrind: build
 	valgrind --leak-check=full --show-leak-kinds=all -s ./build/addr
