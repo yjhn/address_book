@@ -89,12 +89,12 @@ struct AddressBook read_addresses(FILE *file)
 	addresses.size += 1;
 
 	while (fgets(line, LINE_BUFFER_SIZE, file) != NULL) {
-		size_t len = strlen(line);
+		len = strlen(line);
 		if (line[len - 1] == '\n') {
 			line[len - 1] = '\0';
 		}
 
-		struct Address addr = parse_line(line);
+		addr = parse_line(line);
 		last->next = make_elem(addr, NULL);
 		last = last->next;
 		addresses.size += 1;
@@ -128,7 +128,7 @@ struct Address parse_line(char *line)
 // Displays all addresses in a table.
 void display_addresses(const struct AddressBook *addresses)
 {
-	printf("%ld records in total.\n", addresses->size);
+	printf("%zu records in total.\n", addresses->size);
 	struct ListElement *elem = addresses->head;
 	printf("%-15s\t%-15s\t%-30s\t%-12s\n", "NAME", "SURNAME", "EMAIL",
 	       "PHONE");
