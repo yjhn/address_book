@@ -8,7 +8,19 @@
 #define PATH_BUFFER_SIZE 512
 #define FILE_NAME "addresses.csv"
 
+struct AddressBook populate_from_file();
+
 int main(void)
+{
+	struct AddressBook addr_book = populate_from_file();
+	display_addresses(&addr_book);
+
+	delete_address_book(&addr_book);
+
+	return 0;
+}
+
+struct AddressBook populate_from_file()
 {
 	char *home_dir = getenv("HOME");
 	char file_path[PATH_BUFFER_SIZE];
@@ -26,11 +38,8 @@ int main(void)
 		free(error);
 	} else {
 		addr_book = read_addresses(file);
+		fclose(file);
 	}
-	display_addresses(&addr_book);
 
-	delete_address_book(&addr_book);
-	fclose(file);
-
-	return 0;
+	return addr_book;
 }
