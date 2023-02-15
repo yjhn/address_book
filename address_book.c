@@ -45,6 +45,20 @@ struct Address *find_address_by_phone(struct AddressBook *addresses,
 				      const char *phone);
 static struct ListElement *make_elem(const struct Address addr,
 				     struct ListElement *next);
+static void delete_address_record(struct Address *addr);
+void save_addresses_to_file(const struct AddressBook *addresses, FILE *file);
+
+void save_addresses_to_file(const struct AddressBook *addresses, FILE *file)
+{
+	struct ListElement *elem = addresses->head;
+	while (elem != NULL) {
+		struct Address record = elem->data;
+		fprintf(file, "%s,%s,%s,%s\n", record.name, record.surname,
+			record.email, record.phone);
+		elem = elem->next;
+	}
+}
+
 static void delete_address_record(struct Address *addr)
 {
 	free(addr->name);
@@ -193,7 +207,7 @@ bool delete_address(struct AddressBook *addresses, const size_t pos)
 			elem = elem->next;
 		}
 		struct ListElement *temp = elem->next->next;
-		delete_address_record(&elem->data);
+		delete_address_record(&elem->next->data);
 		free(elem->next);
 		elem->next = temp;
 	}
@@ -207,7 +221,7 @@ struct Address *get_address(struct AddressBook *addresses, const size_t pos)
 	}
 
 	struct ListElement *elem = addresses->head;
-	for (size_t i = 0; i <= pos; ++i) {
+	for (size_t i = 0; i < pos; ++i) {
 		elem = elem->next;
 	}
 	return &elem->data;
@@ -234,10 +248,11 @@ struct Address *find_address_by_name(struct AddressBook *addresses,
 				     const char *name)
 {
 	struct ListElement *elem = addresses->head;
-	for (size_t i = 0; i < addresses->size; ++i) {
+	while (elem != NULL) {
 		if (strcmp(elem->data.name, name) == 0) {
 			return &elem->data;
 		}
+		elem = elem->next;
 	}
 	return NULL;
 }
@@ -246,10 +261,11 @@ struct Address *find_address_by_surname(struct AddressBook *addresses,
 					const char *surname)
 {
 	struct ListElement *elem = addresses->head;
-	for (size_t i = 0; i < addresses->size; ++i) {
+	while (elem != NULL) {
 		if (strcmp(elem->data.surname, surname) == 0) {
 			return &elem->data;
 		}
+		elem = elem->next;
 	}
 	return NULL;
 }
@@ -258,10 +274,11 @@ struct Address *find_address_by_email(struct AddressBook *addresses,
 				      const char *email)
 {
 	struct ListElement *elem = addresses->head;
-	for (size_t i = 0; i < addresses->size; ++i) {
+	while (elem != NULL) {
 		if (strcmp(elem->data.email, email) == 0) {
 			return &elem->data;
 		}
+		elem = elem->next;
 	}
 	return NULL;
 }
@@ -270,10 +287,11 @@ struct Address *find_address_by_phone(struct AddressBook *addresses,
 				      const char *phone)
 {
 	struct ListElement *elem = addresses->head;
-	for (size_t i = 0; i < addresses->size; ++i) {
+	while (elem != NULL) {
 		if (strcmp(elem->data.phone, phone) == 0) {
 			return &elem->data;
 		}
+		elem = elem->next;
 	}
 	return NULL;
 }
