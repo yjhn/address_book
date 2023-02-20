@@ -1,7 +1,9 @@
-BIN:=address_book
+OUTPUT_DIR:=build
+BIN:=$(OUTPUT_DIR)/address_book
 SRCS:=$(wildcard *.c)
 HEADERS:=$(wildcard *.h)
-OBJS:=$(SRCS:.c=.o)
+OBJS:=$(SRCS:%.c=$(OUTPUT_DIR)/%.o)
+CC:=gcc
 # CPPFLAGS stand for 'C preprocessor flags'
 CPPFLAGS:=
 CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g
@@ -13,13 +15,14 @@ all: $(BIN)
 
 $(BIN): $(OBJS)
 	$(CC) -o $@ $^
-	
+
 # Creates a separate rule for each .o file
-$(OBJS): %.o: %.c
+$(OBJS): $(OUTPUT_DIR)/%.o: %.c
+	mkdir -p $(OUTPUT_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 clean:
-	$(RM) $(OBJS) $(BIN)
+	rm -rf $(OUTPUT_DIR)
 
 run: $(BIN)
 	./$(BIN)
