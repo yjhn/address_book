@@ -1,22 +1,39 @@
-C_FILES = main.c address_book.c
+OUTPUT_DIR:=build
+BIN:=$(OUTPUT_DIR)/address_book
+SRCS:=$(wildcard *.c)
+OBJS:=$(SRCS:%.c=$(OUTPUT_DIR)/%.o)
+CC:=gcc
+# CPPFLAGS stand for 'C preprocessor flags'
+CPPFLAGS:=
+CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g
 
-.PHONY: run valgrind cppcheck debug
+.PHONY: all clean run valgrind cppcheck debug
+.DELETE_ON_ERROR:
 
-run: build
-	./build/addr
+all: $(BIN)
 
-build: $(C_FILES)
-	mkdir -p build
-	gcc -o build/addr main.c -std=gnu11 -Wall -Wextra -Wpedantic -Wconversion
+$(BIN): $(OBJS)
+	$(CC) -o $@ $^
 
-debug: build
-	gdb --args ./build/addr
+# Creates a separate rule for each .o file
+$(OBJS): $(OUTPUT_DIR)/%.o: %.c
+	mkdir -p $(OUTPUT_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-valgrind: build
-	valgrind --leak-check=full --show-leak-kinds=all -s ./build/addr
+clean:
+	rm -rf $(OUTPUT_DIR)
 
-format: $(C_FILES)
-	clang-format -i --style=file $(C_FILES) --verbose
+run: $(BIN)
+	./$(BIN)
+
+debug: $(BIN)
+	gdb --args ./$(BIN)
+
+valgrind: $(BIN)
+	valgrind --leak-check=full --show-leak-kinds=all -s ./$(BIN)
+
+format:
+	clang-format -i --style=file --verbose
 
 cppcheck:
 	cppcheck --enable=all .
@@ -25,4 +42,4 @@ cppcheck:
 # we generate them using bear:
 # https://github.com/rizsotto/Bear
 clangd: Makefile
-	bear -- make build
+	bear -- $(MAKE) all
