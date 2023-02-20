@@ -13,11 +13,8 @@ int execute_user_command(struct AddressBook *addresses)
 	     "3) Add new address to specific position\n"
 	     "4) Delete address\n"
 	     "5) Display address in specified position\n"
-	     "6) Find address by name\n"
-	     "7) Find address by surname\n"
-	     "8) Find address by email\n"
-	     "9) Find address by phone number\n"
-	     "10) Quit");
+	     "6) Find address\n"
+	     "7) Quit");
 
 	unsigned int selected = get_selection_number(1, 10);
 	switch (selected) {
@@ -37,18 +34,9 @@ int execute_user_command(struct AddressBook *addresses)
 		display_specific_addr(addresses);
 		break;
 	case 6:
-		find_by_name(addresses);
+		find_by_keyword(addresses);
 		break;
 	case 7:
-		find_by_surname(addresses);
-		break;
-	case 8:
-		find_by_email(addresses);
-		break;
-	case 9:
-		find_by_phone(addresses);
-		break;
-	case 10:
 		return 1;
 	default:
 		puts("Unreachable code entered");
@@ -181,7 +169,7 @@ void display_specific_addr(struct AddressBook *addresses)
 	display_addr(addr);
 }
 
-void find_by_name(struct AddressBook *addresses)
+void find_by_keyword(struct AddressBook *addresses)
 {
 	if (addresses->size == 0) {
 		puts("Address book is empty");
@@ -190,103 +178,16 @@ void find_by_name(struct AddressBook *addresses)
 
 	bool header_displayed = false;
 	char buffer[128];
-	puts("Search by name:");
+	puts("Search by keyword:");
 	read_string(buffer, sizeof(buffer));
 
 	size_t len = strlen(buffer);
 	struct ListElement *elem = addresses->head;
 	while (elem != NULL) {
-		if (strncmp(elem->data.name, buffer, len) == 0) {
-			if (!header_displayed) {
-				display_address_table_header();
-				header_displayed = true;
-			}
-			display_addr(&elem->data);
-		}
-		elem = elem->next;
-	}
-	if (!header_displayed) {
-		puts("Address with specified name not found.");
-		return;
-	}
-}
-
-void find_by_surname(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	bool header_displayed = false;
-	char buffer[128];
-	puts("Search by surname:");
-	read_string(buffer, sizeof(buffer));
-
-	size_t len = strlen(buffer);
-	struct ListElement *elem = addresses->head;
-	while (elem != NULL) {
-		if (strncmp(elem->data.surname, buffer, len) == 0) {
-			if (!header_displayed) {
-				display_address_table_header();
-				header_displayed = true;
-			}
-			display_addr(&elem->data);
-		}
-		elem = elem->next;
-	}
-	if (!header_displayed) {
-		puts("Address with specified surname not found.");
-		return;
-	}
-}
-
-void find_by_email(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	bool header_displayed = false;
-	char buffer[128];
-	puts("Search by email:");
-	read_string(buffer, sizeof(buffer));
-
-	size_t len = strlen(buffer);
-	struct ListElement *elem = addresses->head;
-	while (elem != NULL) {
-		if (strncmp(elem->data.email, buffer, len) == 0) {
-			if (!header_displayed) {
-				display_address_table_header();
-				header_displayed = true;
-			}
-			display_addr(&elem->data);
-		}
-		elem = elem->next;
-	}
-	if (!header_displayed) {
-		puts("Address with specified email not found.");
-		return;
-	}
-}
-
-void find_by_phone(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	bool header_displayed = false;
-	char buffer[128];
-	puts("Search by phone:");
-	read_string(buffer, sizeof(buffer));
-
-	size_t len = strlen(buffer);
-	struct ListElement *elem = addresses->head;
-	while (elem != NULL) {
-		if (strncmp(elem->data.phone, buffer, len) == 0) {
+		if (strncmp(elem->data.name, buffer, len) == 0 ||
+		    strncmp(elem->data.surname, buffer, len) == 0 ||
+		    strncmp(elem->data.email, buffer, len) == 0 ||
+		    strncmp(elem->data.phone, buffer, len) == 0) {
 			if (!header_displayed) {
 				display_address_table_header();
 				header_displayed = true;
