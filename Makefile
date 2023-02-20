@@ -1,6 +1,7 @@
 OUTPUT_DIR:=build
 BIN:=$(OUTPUT_DIR)/address_book
 SRCS:=$(wildcard *.c)
+HEADERS:=$(wildcard *.h)
 OBJS:=$(SRCS:%.c=$(OUTPUT_DIR)/%.o)
 CC:=gcc
 # CPPFLAGS stand for 'C preprocessor flags'
@@ -33,7 +34,7 @@ valgrind: $(BIN)
 	valgrind --leak-check=full --show-leak-kinds=all -s ./$(BIN)
 
 format:
-	clang-format -i --style=file --verbose
+	clang-format -i --style=file --verbose $(SRCS) $(HEADERS)
 
 cppcheck:
 	cppcheck --enable=all .
@@ -41,5 +42,6 @@ cppcheck:
 # compile_commands.json is needed for clangd to work
 # we generate them using bear:
 # https://github.com/rizsotto/Bear
-clangd: Makefile
+# Clean build artifacts first to force make to run the build commands.
+clangd: clean
 	bear -- $(MAKE) all
