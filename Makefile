@@ -4,7 +4,7 @@ HEADERS:=$(wildcard *.h)
 OBJS:=$(SRCS:.c=.o)
 # CPPFLAGS stand for 'C preprocessor flags'
 CPPFLAGS:=
-CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g
+CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g -fanalyzer
 
 .PHONY: all clean run valgrind cppcheck debug
 .DELETE_ON_ERROR:
