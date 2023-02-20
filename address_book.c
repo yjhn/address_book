@@ -1,52 +1,12 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+
+#include "address_book.h"
 
 #define LINE_BUFFER_SIZE 1024
 
-struct Address {
-	char *name;
-	char *surname;
-	char *email;
-	char *phone;
-};
-
-struct ListElement {
-	struct Address data;
-	struct ListElement *next;
-};
-
-// When empty, size = 0 and head = NULL.
-struct AddressBook {
-	struct ListElement *head;
-	size_t size;
-};
-
-struct AddressBook create_address_book();
-struct AddressBook read_addresses(FILE *file);
-struct Address parse_line(char *line);
-void display_addresses(const struct AddressBook *addresses);
-void add_address_to_end(struct AddressBook *addresses,
-			const struct Address addr);
-bool add_address(struct AddressBook *addresses, const size_t pos,
-		 const struct Address addr);
-bool delete_address(struct AddressBook *addresses, const size_t pos);
-struct Address *get_address(struct AddressBook *addresses, const size_t pos);
-void delete_all_addresses(struct AddressBook *addresses);
-void delete_address_book(struct AddressBook *addresses);
-struct Address *find_address_by_name(struct AddressBook *addresses,
-				     const char *name);
-struct Address *find_address_by_surname(struct AddressBook *addresses,
-					const char *surname);
-struct Address *find_address_by_email(struct AddressBook *addresses,
-				      const char *email);
-struct Address *find_address_by_phone(struct AddressBook *addresses,
-				      const char *phone);
 static struct ListElement *make_elem(const struct Address addr,
 				     struct ListElement *next);
-static void delete_address_record(struct Address *addr);
-void save_addresses_to_file(const struct AddressBook *addresses, FILE *file);
 
 void save_addresses_to_file(const struct AddressBook *addresses, FILE *file)
 {
@@ -57,14 +17,6 @@ void save_addresses_to_file(const struct AddressBook *addresses, FILE *file)
 			record.email, record.phone);
 		elem = elem->next;
 	}
-}
-
-static void delete_address_record(struct Address *addr)
-{
-	free(addr->name);
-	free(addr->surname);
-	free(addr->email);
-	free(addr->phone);
 }
 
 struct AddressBook create_address_book()
@@ -117,26 +69,32 @@ struct AddressBook read_addresses(FILE *file)
 	return addresses;
 }
 
+// Always appends null terminator.
+void safe_strncpy(char *dest, const char *src, size_t dest_size)
+{
+	strncpy(dest, src, dest_size);
+	dest[dest_size - 1] = '\0';
+}
+
+struct Address make_address(char *name, char *surname, char *email, char *phone)
+{
+	struct Address addr;
+	safe_strncpy(addr.name, name, sizeof(addr.name));
+	safe_strncpy(addr.surname, surname, sizeof(addr.surname));
+	safe_strncpy(addr.email, email, sizeof(addr.email));
+	safe_strncpy(addr.phone, phone, sizeof(addr.phone));
+
+	return addr;
+}
+
 // Creates an address from a single CSV line.
 struct Address parse_line(char *line)
 {
-	char *name_ref = strtok(line, ",");
-	// strdup is in POSIX and C23
-	char *name = strdup(name_ref);
-
-	char *surname_ref = strtok(NULL, ",");
-	char *surname = strdup(surname_ref);
-
-	char *email_ref = strtok(NULL, ",");
-	char *email = strdup(email_ref);
-
-	char *phone_ref = strtok(NULL, ",");
-	char *phone = strdup(phone_ref);
-
-	struct Address addr = {
-		.name = name, .surname = surname, .email = email, .phone = phone
-	};
-	return addr;
+	char *name = strtok(line, ",");
+	char *surname = strtok(NULL, ",");
+	char *email = strtok(NULL, ",");
+	char *phone = strtok(NULL, ",");
+	return make_address(name, surname, email, phone);
 }
 
 // Displays all addresses in a table.
@@ -199,18 +157,17 @@ bool delete_address(struct AddressBook *addresses, const size_t pos)
 	struct ListElement *elem = addresses->head;
 	if (pos == 0) {
 		addresses->head = elem->next;
-		delete_address_record(&elem->data);
 		free(elem);
-	} else {
-		// Iterate until one before elem to be deleted.
-		for (size_t i = 0; i < pos - 1; ++i) {
-			elem = elem->next;
-		}
-		struct ListElement *temp = elem->next->next;
-		delete_address_record(&elem->next->data);
-		free(elem->next);
-		elem->next = temp;
+		return true;
 	}
+	// Iterate until one before elem to be deleted.
+	for (size_t i = 0; i < pos - 1; ++i) {
+		elem = elem->next;
+	}
+	struct ListElement *temp = elem->next->next;
+	free(elem->next);
+	elem->next = temp;
+
 	return true;
 }
 
@@ -236,64 +193,11 @@ void delete_all_addresses(struct AddressBook *addresses)
 	struct ListElement *elem = addresses->head;
 	while (elem != NULL) {
 		struct ListElement *next = elem->next;
-		delete_address_record(&elem->data);
 		free(elem);
 		elem = next;
 	}
 	addresses->head = NULL;
 	addresses->size = 0;
-}
-
-struct Address *find_address_by_name(struct AddressBook *addresses,
-				     const char *name)
-{
-	struct ListElement *elem = addresses->head;
-	while (elem != NULL) {
-		if (strcmp(elem->data.name, name) == 0) {
-			return &elem->data;
-		}
-		elem = elem->next;
-	}
-	return NULL;
-}
-
-struct Address *find_address_by_surname(struct AddressBook *addresses,
-					const char *surname)
-{
-	struct ListElement *elem = addresses->head;
-	while (elem != NULL) {
-		if (strcmp(elem->data.surname, surname) == 0) {
-			return &elem->data;
-		}
-		elem = elem->next;
-	}
-	return NULL;
-}
-
-struct Address *find_address_by_email(struct AddressBook *addresses,
-				      const char *email)
-{
-	struct ListElement *elem = addresses->head;
-	while (elem != NULL) {
-		if (strcmp(elem->data.email, email) == 0) {
-			return &elem->data;
-		}
-		elem = elem->next;
-	}
-	return NULL;
-}
-
-struct Address *find_address_by_phone(struct AddressBook *addresses,
-				      const char *phone)
-{
-	struct ListElement *elem = addresses->head;
-	while (elem != NULL) {
-		if (strcmp(elem->data.phone, phone) == 0) {
-			return &elem->data;
-		}
-		elem = elem->next;
-	}
-	return NULL;
 }
 
 void delete_address_book(struct AddressBook *addresses)

@@ -2,18 +2,37 @@
   {
     "arguments": [
       "/usr/bin/gcc",
-      "-c",
       "-std=gnu11",
       "-Wall",
       "-Wextra",
       "-Wpedantic",
       "-Wconversion",
+      "-g",
+      "-c",
       "-o",
-      "build/addr",
+      "build/address_book.o",
+      "address_book.c"
+    ],
+    "directory": "/home/studentas/learning/address_book",
+    "file": "/home/studentas/learning/address_book/address_book.c",
+    "output": "/home/studentas/learning/address_book/build/address_book.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-std=gnu11",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-g",
+      "-c",
+      "-o",
+      "build/main.o",
       "main.c"
     ],
     "directory": "/home/studentas/learning/address_book",
     "file": "/home/studentas/learning/address_book/main.c",
-    "output": "/home/studentas/learning/address_book/build/addr"
+    "output": "/home/studentas/learning/address_book/build/main.o"
   }
 ]

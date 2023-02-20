@@ -2,86 +2,46 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <signal.h>
+#include <unistd.h>
 
-#include "address_book.c"
+#include "address_book.h"
+#include "user_interface.h"
 
 #define PATH_BUFFER_SIZE 512
 #define FILE_NAME "addresses.csv"
 
+void sigint_handler(int signum);
+
 void get_file_path(char *buffer, size_t buf_size);
 void save_to_file(const struct AddressBook *addresses);
 struct AddressBook populate_from_file();
-unsigned int get_selection_number(unsigned int min, unsigned int max);
-void read_string(char *buffer, size_t buf_size);
 
-void add_addr_to_end(struct AddressBook *addresses);
-void insert_addr(struct AddressBook *addresses);
-void delete_addr(struct AddressBook *addresses);
-void display_addr(const struct Address *addr);
-void display_specific_addr(struct AddressBook *addresses);
-void find_by_name(struct AddressBook *addresses);
-void find_by_surname(struct AddressBook *addresses);
-void find_by_email(struct AddressBook *addresses);
-void find_by_phone(struct AddressBook *addresses);
-struct Address create_address();
+volatile sig_atomic_t keep_running = 1;
 
 int main(void)
 {
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = sigint_handler;
+	sigaction(SIGINT, &sa, NULL);
+
 	struct AddressBook addr_book = populate_from_file();
 	int retval = 0;
 
-	while (true) {
-		puts("Select an action by number:\n"
-		     "1) Display address book\n"
-		     "2) Add new address to the end\n"
-		     "3) Add new address to specific position\n"
-		     "4) Delete address\n"
-		     "5) Display address in specified position\n"
-		     "6) Find address by name\n"
-		     "7) Find address by surname\n"
-		     "8) Find address by email\n"
-		     "9) Find address by phone number\n"
-		     "10) Quit");
-
-		unsigned int selected = get_selection_number(1, 10);
-		switch (selected) {
+	while (keep_running) {
+		int status = execute_user_command(&addr_book);
+		switch (status) {
 		case 1:
-			display_addresses(&addr_book);
-			break;
-		case 2:
-			add_addr_to_end(&addr_book);
-			break;
-		case 3:
-			insert_addr(&addr_book);
-			break;
-		case 4:
-			delete_addr(&addr_book);
-			break;
-		case 5:
-			display_specific_addr(&addr_book);
-			break;
-		case 6:
-			find_by_name(&addr_book);
-			break;
-		case 7:
-			find_by_surname(&addr_book);
-			break;
-		case 8:
-			find_by_email(&addr_book);
-			break;
-		case 9:
-			find_by_phone(&addr_book);
-			break;
-		case 10:
+			// User asked to exit.
 			goto end;
-		default:
-			puts("Unreachable code entered");
+		case -1:
+			// Error.
 			retval = 1;
 			goto end;
+		default:
+			continue;
 		}
-
-		// Leave an empty line, it looks better.
-		puts("");
 	}
 
 end:
@@ -137,192 +97,14 @@ void save_to_file(const struct AddressBook *addresses)
 	fclose(file);
 }
 
-void read_string(char *buffer, size_t buf_size)
+void sigint_handler(int signum)
 {
-	fgets(buffer, (int)buf_size, stdin);
-	size_t len = strlen(buffer);
-	if (buffer[len - 1] == '\n') {
-		buffer[len - 1] = '\0';
-	}
-}
+	// Avoid unused parameter warning.
+	(void)signum;
 
-struct Address create_address()
-{
-	char buffer[128];
-	puts("Creating an address.");
-	puts("Enter name:");
-	read_string(buffer, sizeof(buffer));
-	char *name = strdup(buffer);
-	puts("Enter surname:");
-	read_string(buffer, sizeof(buffer));
-	char *surname = strdup(buffer);
-	puts("Enter email:");
-	read_string(buffer, sizeof(buffer));
-	char *email = strdup(buffer);
-	puts("Enter phone number:");
-	read_string(buffer, sizeof(buffer));
-	char *phone = strdup(buffer);
-
-	struct Address addr = {
-		.name = name, .surname = surname, .email = email, .phone = phone
-	};
-	return addr;
-}
-
-void discard_stdin_until_newline()
-{
-	while (getchar() != '\n') {
-	}
-}
-
-unsigned int get_selection_number(unsigned int min, unsigned int max)
-{
-	unsigned int selected = 0;
-
-	do {
-		int matched = scanf("%u", &selected);
-		discard_stdin_until_newline();
-		if (matched != 1) {
-			puts("Please enter a positive number");
-		} else if (selected < min || selected > max) {
-			printf("Invalid choice. Enter a number between %u and %u\n",
-			       min, max);
-		} else {
-			return selected;
-		}
-	} while (true);
-}
-
-size_t get_index(size_t min, size_t max)
-{
-	size_t index = 0;
-	do {
-		printf("Enter a number between %zu and %zu:\n", min, max);
-		int matched = scanf("%zu", &index);
-		discard_stdin_until_newline();
-		if (matched != 1) {
-			puts("Please enter a positive number");
-		} else if (index < min || index > max) {
-			puts("Invalid number");
-		} else {
-			return index;
-		}
-	} while (true);
-}
-
-void add_addr_to_end(struct AddressBook *addresses)
-{
-	struct Address addr = create_address();
-	add_address_to_end(addresses, addr);
-}
-
-void insert_addr(struct AddressBook *addresses)
-{
-	struct Address addr = create_address();
-	puts("Enter position where the address should be inserted.");
-	size_t index = get_index(0, addresses->size);
-	add_address(addresses, index, addr);
-}
-
-void delete_addr(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	size_t index = get_index(0, addresses->size - 1);
-	delete_address(addresses, index);
-}
-
-void display_addr(const struct Address *addr)
-{
-	printf("%-15s\t%-15s\t%-30s\t%-12s\n", "NAME", "SURNAME", "EMAIL",
-	       "PHONE");
-	printf("%-15s\t%-15s\t%-30s\t%-12s\n", addr->name, addr->surname,
-	       addr->email, addr->phone);
-}
-
-void display_specific_addr(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	size_t index = get_index(0, addresses->size);
-	const struct Address *addr = get_address(addresses, index);
-	display_addr(addr);
-}
-
-void find_by_name(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	char buffer[128];
-	puts("Search by name:");
-	read_string(buffer, sizeof(buffer));
-	const struct Address *addr = find_address_by_name(addresses, buffer);
-	if (addr == NULL) {
-		puts("Address with specified name not found.");
-		return;
-	}
-	display_addr(addr);
-}
-
-void find_by_surname(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	char buffer[128];
-	puts("Search by surname:");
-	read_string(buffer, sizeof(buffer));
-	const struct Address *addr = find_address_by_surname(addresses, buffer);
-	if (addr == NULL) {
-		puts("Address with specified surname not found.");
-		return;
-	}
-	display_addr(addr);
-}
-
-void find_by_email(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	char buffer[128];
-	puts("Search by email:");
-	read_string(buffer, sizeof(buffer));
-	const struct Address *addr = find_address_by_email(addresses, buffer);
-	if (addr == NULL) {
-		puts("Address with specified email not found.");
-		return;
-	}
-	display_addr(addr);
-}
-
-void find_by_phone(struct AddressBook *addresses)
-{
-	if (addresses->size == 0) {
-		puts("Address book is empty");
-		return;
-	}
-
-	char buffer[128];
-	puts("Search by phone:");
-	read_string(buffer, sizeof(buffer));
-	const struct Address *addr = find_address_by_phone(addresses, buffer);
-	if (addr == NULL) {
-		puts("Address with specified phone not found.");
-		return;
-	}
-	display_addr(addr);
+	const char *msg =
+		"CTRL+C pressed, will exit after this action is completed";
+	// 1 is stdout.
+	write(1, msg, strlen(msg));
+	keep_running = 0;
 }
