@@ -1,48 +1,52 @@
-BIN:=address_book
-SRCS:=$(wildcard *.c)
-HEADERS:=$(wildcard *.h)
-OBJS:=$(SRCS:.c=.o)
-# CPPFLAGS stand for 'C preprocessor flags'
-CPPFLAGS:=
-CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g -fanalyzer
+LIB_DIR:=lib
+BIN_DIR:=src
+LIB:=$(LIB_DIR)/libaddressbook.so
+BIN:=$(BIN_DIR)/address_book
+EXEC_ENV:=LD_LIBRARY_PATH=$(LIB_DIR)
+EXEC_BIN:=$(EXEC_ENV) ./$(BIN)
 
-.PHONY: all clean run valgrind cppcheck debug
+.PHONY: all clean $(LIB) format clangd infer run valgrind cppcheck debug
 .DELETE_ON_ERROR:
 
 all: $(BIN)
 
-$(BIN): $(OBJS)
-	$(CC) -o $@ $^
-	
-# Creates a separate rule for each .o file
-$(OBJS): %.o: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+$(BIN): $(LIB)
+	cd $(BIN_DIR) && $(MAKE)
+
+$(LIB):
+	cd $(LIB_DIR) && $(MAKE)
 
 clean:
-	$(RM) $(OBJS) $(BIN)
+	cd $(LIB_DIR) && $(MAKE) clean
+	cd $(BIN_DIR) && $(MAKE) clean
 	git clean -dfX
 
 run: $(BIN)
-	./$(BIN)
+	$(EXEC_BIN)
 
 debug: $(BIN)
-	gdb --args ./$(BIN)
+	$(EXEC_ENV) gdb --args ./$(BIN)
 
 valgrind: $(BIN)
-	valgrind --leak-check=full --show-leak-kinds=all -s ./$(BIN)
+	valgrind --leak-check=full --show-leak-kinds=all --trace-children=yes -s env $(EXEC_BIN)
 
 format:
-	clang-format -i --style=file --verbose $(SRCS) $(HEADERS)
+	cd $(LIB_DIR) && $(MAKE) format
+	cd $(BIN_DIR) && $(MAKE) format
 
 cppcheck:
 	cppcheck --enable=all .
+
+check:
+	cd $(LIB_DIR) && $(MAKE) check
+	cd $(BIN_DIR) && $(MAKE) check
 
 # compile_commands.json is needed for clangd to work
 # we generate them using bear:
 # https://github.com/rizsotto/Bear
 # Clean build artifacts first to force make to run the build commands.
 clangd: clean
-	bear -- $(MAKE) all
+	bear -- $(MAKE)
 
 # Infer static analyzer: https://fbinfer.com
 # REMOVE -fanalyzer COMPILER FLAG BEFORE RUNNING, clang DOES NOT

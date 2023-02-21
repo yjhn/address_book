@@ -1,38 +1,59 @@
 [
   {
     "arguments": [
-      "/usr/bin/gcc",
+      "/usr/bin/cc",
       "-std=gnu11",
       "-Wall",
       "-Wextra",
       "-Wpedantic",
       "-Wconversion",
       "-g",
+      "-fPIC",
       "-c",
       "-o",
-      "build/address_book.o",
+      "address_book.o",
       "address_book.c"
     ],
-    "directory": "/home/studentas/learning/address_book",
-    "file": "/home/studentas/learning/address_book/address_book.c",
-    "output": "/home/studentas/learning/address_book/build/address_book.o"
+    "directory": "/home/studentas/learning/address_book/lib",
+    "file": "/home/studentas/learning/address_book/lib/address_book.c",
+    "output": "/home/studentas/learning/address_book/lib/address_book.o"
   },
   {
     "arguments": [
-      "/usr/bin/gcc",
+      "/usr/bin/cc",
       "-std=gnu11",
       "-Wall",
       "-Wextra",
       "-Wpedantic",
       "-Wconversion",
       "-g",
+      "-I../lib/",
       "-c",
       "-o",
-      "build/main.o",
+      "main.o",
       "main.c"
     ],
-    "directory": "/home/studentas/learning/address_book",
-    "file": "/home/studentas/learning/address_book/main.c",
-    "output": "/home/studentas/learning/address_book/build/main.o"
+    "directory": "/home/studentas/learning/address_book/src",
+    "file": "/home/studentas/learning/address_book/src/main.c",
+    "output": "/home/studentas/learning/address_book/src/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-std=gnu11",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-g",
+      "-I../lib/",
+      "-c",
+      "-o",
+      "user_interface.o",
+      "user_interface.c"
+    ],
+    "directory": "/home/studentas/learning/address_book/src",
+    "file": "/home/studentas/learning/address_book/src/user_interface.c",
+    "output": "/home/studentas/learning/address_book/src/user_interface.o"
   }
 ]

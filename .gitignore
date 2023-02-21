@@ -7,3 +7,6 @@ build/
 infer-out/
 *.gch
 *.plist
+
+*.o
+*.s

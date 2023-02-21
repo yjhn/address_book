@@ -163,7 +163,7 @@ void display_specific_addr(struct AddressBook *addresses)
 		return;
 	}
 
-	size_t index = get_index(0, addresses->size);
+	size_t index = get_index(0, addresses->size - 1);
 	const struct Address *addr = get_address(addresses, index);
 	display_address_table_header();
 	display_addr(addr);
