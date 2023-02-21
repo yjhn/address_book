@@ -133,18 +133,24 @@ void add_address_to_end(struct AddressBook *addresses,
 bool add_address(struct AddressBook *addresses, const size_t pos,
 		 const struct Address addr)
 {
-	if (pos > 0 && addresses->size < pos - 1) {
-		return false;
-	}
-
 	struct ListElement *new = make_elem(addr, NULL);
 	addresses->size += 1;
 	struct ListElement *elem = addresses->head;
-	for (size_t i = 0; i < pos; ++i) {
-		elem = elem->next;
+	if (pos == 0) {
+		new->next = elem;
+		addresses->head = new;
+	} else {
+		if (addresses->size < pos) {
+			return false;
+		}
+
+		for (size_t i = 1; i < pos; ++i) {
+			elem = elem->next;
+		}
+		new->next = elem->next;
+		elem->next = new;
 	}
-	new->next = elem->next;
-	elem->next = new;
+
 	return true;
 }
 

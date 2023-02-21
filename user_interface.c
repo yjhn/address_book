@@ -16,7 +16,7 @@ int execute_user_command(struct AddressBook *addresses)
 	     "6) Find address\n"
 	     "7) Quit");
 
-	unsigned int selected = get_selection_number(1, 10);
+	unsigned int selected = get_selection_number(1, 7);
 	switch (selected) {
 	case 1:
 		display_addresses(addresses);
