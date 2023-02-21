@@ -3,3 +3,7 @@
 
 build/
 .cache/
+
+infer-out/
+*.gch
+*.plist

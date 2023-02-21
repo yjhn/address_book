@@ -20,6 +20,7 @@ $(OBJS): %.o: %.c
 
 clean:
 	$(RM) $(OBJS) $(BIN)
+	git clean -dfX
 
 run: $(BIN)
 	./$(BIN)
@@ -42,3 +43,9 @@ cppcheck:
 # Clean build artifacts first to force make to run the build commands.
 clangd: clean
 	bear -- $(MAKE) all
+
+# Infer static analyzer: https://fbinfer.com
+# REMOVE -fanalyzer COMPILER FLAG BEFORE RUNNING, clang DOES NOT
+# HAVE IT
+infer: clean
+	infer run -- $(MAKE)
