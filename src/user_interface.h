@@ -1,7 +1,7 @@
 #ifndef UI_H
 #define UI_H
 
-#include "address_book.h"
+#include <address_book.h>
 
 int execute_user_command(struct AddressBook *addresses);
 void add_addr_to_end(struct AddressBook *addresses);

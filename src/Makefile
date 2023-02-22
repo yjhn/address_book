@@ -3,8 +3,10 @@ SRCS:=$(wildcard *.c)
 HEADERS:=$(wildcard *.h)
 OBJS:=$(SRCS:.c=.o)
 ASSEMBLY_FILES:=$(wildcard *.s)
-CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g
 LIB_PATH:=../lib/
+# CPPFLAGS stand for 'C preprocessor flags'
+CPPFLAGS:=-I$(LIB_PATH)
+CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g
 LDLIBS:=-laddressbook
 LDFLAGS:=-L$(LIB_PATH)
 
@@ -18,16 +20,15 @@ $(BIN): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
 # Creates a separate rule for each .o file
-# CPPFLAGS stand for 'C preprocessor flags'
-$(OBJS): %.o: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -I$(LIB_PATH) -c -o $@ $<
+%.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 clean:
 	$(RM) $(OBJS) $(BIN) $(ASSEMBLY_FILES)
 
 # Produces .s files.
 check:
-	gcc $(CPPFLAGS) $(CFLAGS) -I$(LIB_PATH) -fanalyzer -S $(SRCS)
+	gcc $(CPPFLAGS) $(CFLAGS) -fanalyzer -S $(SRCS)
 
 format:
 	clang-format -i --style=file --verbose $(SRCS) $(HEADERS)
