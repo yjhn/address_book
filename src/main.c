@@ -105,6 +105,6 @@ void sigint_handler(int signum)
 	const char *msg =
 		"CTRL+C pressed, will exit after this action is completed";
 	// 1 is stdout.
-	write(1, msg, strlen(msg));
+	write(STDOUT_FILENO, msg, strlen(msg));
 	keep_running = 0;
 }
