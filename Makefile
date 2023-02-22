@@ -1,9 +1,13 @@
 LIB_DIR:=lib
 BIN_DIR:=src
-LIB:=$(LIB_DIR)/libaddressbook.so
-BIN:=$(BIN_DIR)/address_book
+LIB_NAME:=libaddressbook.so
+BIN_NAME:=address_book
+LIB:=$(LIB_DIR)/$(LIB_NAME)
+BIN:=$(BIN_DIR)/$(BIN_NAME)
 EXEC_ENV:=LD_LIBRARY_PATH=$(LIB_DIR)
 EXEC_BIN:=$(EXEC_ENV) ./$(BIN)
+LIB_INSTALL_DIR:=/usr/local/lib/x86_64-linux-gnu/
+BIN_INSTALL_DIR:=/usr/local/bin/
 
 .PHONY: all clean $(LIB) format clangd infer run valgrind cppcheck debug
 .DELETE_ON_ERROR:
@@ -40,6 +44,16 @@ cppcheck:
 check:
 	$(MAKE) -C $(LIB_DIR) check
 	$(MAKE) -C $(BIN_DIR) check
+
+install: $(BIN)
+	sudo mkdir -p $(LIB_INSTALL_DIR) $(BIN_INSTALL_DIR)
+	sudo cp $(LIB) $(LIB_INSTALL_DIR)
+	sudo cp $(BIN) $(BIN_INSTALL_DIR)
+	sudo ldconfig
+
+uninstall:
+	sudo rm -f $(LIB_INSTALL_DIR)$(LIB_NAME) $(BIN_INSTALL_DIR)$(BIN_NAME)
+	sudo ldconfig
 
 # compile_commands.json is needed for clangd to work
 # we generate them using bear:
