@@ -3,8 +3,6 @@ SRCS:=$(wildcard *.c)
 HEADERS:=$(wildcard *.h)
 OBJS:=$(SRCS:.c=.o)
 ASSEMBLY_FILES:=$(wildcard *.s)
-# CPPFLAGS stand for 'C preprocessor flags'
-CPPFLAGS:=
 CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g -fPIC
 
 .PHONY: all clean format cppcheck
@@ -16,6 +14,7 @@ $(LIB): $(OBJS)
 	$(CC) -shared -o $@ $^
 	
 # Creates a separate rule for each .o file
+# CPPFLAGS stand for 'C preprocessor flags'
 $(OBJS): %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 

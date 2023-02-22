@@ -3,8 +3,6 @@ SRCS:=$(wildcard *.c)
 HEADERS:=$(wildcard *.h)
 OBJS:=$(SRCS:.c=.o)
 ASSEMBLY_FILES:=$(wildcard *.s)
-# CPPFLAGS stand for 'C preprocessor flags'
-CPPFLAGS:=
 CFLAGS:=-std=gnu11 -Wall -Wextra -Wpedantic -Wconversion -g
 LIB_PATH:=../lib/
 LDLIBS:=-laddressbook
@@ -20,6 +18,7 @@ $(BIN): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
 # Creates a separate rule for each .o file
+# CPPFLAGS stand for 'C preprocessor flags'
 $(OBJS): %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I$(LIB_PATH) -c -o $@ $<
 
