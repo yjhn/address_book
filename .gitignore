@@ -1,7 +1,6 @@
 # vim swap files
 *.swp
 
-build/
 .cache/
 
 infer-out/

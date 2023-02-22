@@ -11,15 +11,15 @@ EXEC_BIN:=$(EXEC_ENV) ./$(BIN)
 all: $(BIN)
 
 $(BIN): $(LIB)
-	cd $(BIN_DIR) && $(MAKE)
+	$(MAKE) -C $(BIN_DIR)
 
 $(LIB):
-	cd $(LIB_DIR) && $(MAKE)
+	$(MAKE) -C $(LIB_DIR)
 
 clean:
-	cd $(LIB_DIR) && $(MAKE) clean
-	cd $(BIN_DIR) && $(MAKE) clean
-	git clean -dfX
+	$(MAKE) -C $(LIB_DIR) clean
+	$(MAKE) -C $(BIN_DIR) clean
+
 
 run: $(BIN)
 	$(EXEC_BIN)
@@ -31,15 +31,15 @@ valgrind: $(BIN)
 	valgrind --leak-check=full --show-leak-kinds=all --trace-children=yes -s env $(EXEC_BIN)
 
 format:
-	cd $(LIB_DIR) && $(MAKE) format
-	cd $(BIN_DIR) && $(MAKE) format
+	$(MAKE) -C $(LIB_DIR) format
+	$(MAKE) -C $(BIN_DIR) format
 
 cppcheck:
 	cppcheck --enable=all .
 
 check:
-	cd $(LIB_DIR) && $(MAKE) check
-	cd $(BIN_DIR) && $(MAKE) check
+	$(MAKE) -C $(LIB_DIR) check
+	$(MAKE) -C $(BIN_DIR) check
 
 # compile_commands.json is needed for clangd to work
 # we generate them using bear:

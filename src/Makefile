@@ -24,7 +24,6 @@ $(OBJS): %.o: %.c
 
 clean:
 	$(RM) $(OBJS) $(BIN) $(ASSEMBLY_FILES)
-	git clean -dfX
 
 # Produces .s files.
 check:
