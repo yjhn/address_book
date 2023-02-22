@@ -15,7 +15,7 @@ $(LIB): $(OBJS)
 	
 # Creates a separate rule for each .o file
 # CPPFLAGS stand for 'C preprocessor flags'
-$(OBJS): %.o: %.c
+%.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 clean:
